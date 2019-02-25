@@ -1,6 +1,9 @@
 # Train your own OpenCV Haar classifier
 
-**Important**: This guide assumes you work with OpenCV 2.4.x. Since I no longer work with OpenCV, and don't have the time to keep up with changes and fixes, this guide is **unmaintained**. Pull requests will be merged of course, and if someone else wants commit access, feel free to ask!
+This repo includes a trained classifier to detect european license plates.
+It is based on the a repo by mrnugget which can be found [here](https://github.com/mrnugget/opencv-haar-classifier-training).
+
+**Important**: This guide assumes you work with OpenCV 2.4.x. 
 
 This repository aims to provide tools and information on training your own
 OpenCV Haar classifier.  Use it in conjunction with this blog post: [Train your own OpenCV Haar
@@ -19,23 +22,23 @@ classifier](http://coding-robin.de/2013/07/22/train-your-own-opencv-haar-classif
 
 2. Clone this repository
 
-        git clone https://github.com/mrnugget/opencv-haar-classifier-training
+        git clone git@github.com:Xaaris/opencv-haar-classifier-training.git
 
 3. Put your positive images in the `./positive_images` folder and create a list
 of them:
 
-        find ./positive_images -iname "*.jpg" > positives.txt
+        find ./positive_images -iname "*.png" > positives.txt
 
 4. Put the negative images in the `./negative_images` folder and create a list of them:
 
-        find ./negative_images -iname "*.jpg" > negatives.txt
+        find ./negative_images -iname "*.png" > negatives.txt
 
 5. Create positive samples with the `bin/createsamples.pl` script and save them
 to the `./samples` folder:
 
-        perl bin/createsamples.pl positives.txt negatives.txt samples 1500\
-          "opencv_createsamples -bgcolor 0 -bgthresh 0 -maxxangle 1.1\
-          -maxyangle 1.1 maxzangle 0.5 -maxidev 40 -w 80 -h 40"
+        perl bin/createsamples.pl positives.txt negatives.txt samples 2000\
+        "opencv_createsamples -bgcolor 0 -bgthresh 0 -maxxangle 1.1\
+        -maxyangle 1.1 -maxzangle 0.0 -maxidev 10 -w 80 -h 30 -show"
 
 6. Use `tools/mergevec.py` to merge the samples in `./samples` into one file:
 
@@ -47,17 +50,10 @@ to the `./samples` folder:
 7. Start training the classifier with `opencv_traincascade`, which comes with
 OpenCV, and save the results to `./classifier`:
 
-        opencv_traincascade -data classifier -vec samples.vec -bg negatives.txt\
-          -numStages 20 -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numPos 1000\
-          -numNeg 600 -w 80 -h 40 -mode ALL -precalcValBufSize 1024\
-          -precalcIdxBufSize 1024
-          
-    If you want to train it faster, configure feature type option with LBP:
-
-         opencv_traincascade -data classifier -vec samples.vec -bg negatives.txt\
-          -numStages 20 -minHitRate 0.999 -maxFalseAlarmRate 0.5 -numPos 1000\
-          -numNeg 600 -w 80 -h 40 -mode ALL -precalcValBufSize 1024\
-          -precalcIdxBufSize 1024 -featureType LBP
+         opencv_traincascade -data classifier4 -vec samples3.vec -bg negatives.txt\
+        -numStages 20 -minHitRate 0.995 -maxFalseAlarmRate 0.5 -numPos 1500\
+        -numNeg 800 -w 80 -h 30 -mode ALL -precalcValBufSize 4096\
+        -precalcIdxBufSize 4096 -featureType LBP -numThreads 8
 
     After starting the training program it will print back its parameters and then start training. Each stage will print out some analysis as it is trained:
 
@@ -100,17 +96,15 @@ OpenCV, and save the results to `./classifier`:
 
 9. Use your finished classifier!
 
-        cd ~/opencv-2.4.9/samples/c
-        chmod +x build_all.sh
-        ./build_all.sh
-        ./facedetect --cascade="~/finished_classifier.xml"
+10. To get some visualization use:
+
+        opencv_visualisation --image=in/example1.png --model=classifier2/cascade.xml --data=out/result_
 
 
 ## Acknowledgements
 
 A huge thanks goes to Naotoshi Seo, who wrote the `mergevec.cpp` and
-`createsamples.cpp` tools and released them under the MIT licencse. His notes
-on OpenCV Haar training were a huge help. Thank you, Naotoshi!
+`createsamples.cpp` tools and released them under the MIT licencse.
 
 ## References & Links:
 
